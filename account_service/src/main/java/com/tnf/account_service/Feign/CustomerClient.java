@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import com.tnf.account_service.Dto.Response.CustomerResponse;
 
 // Resolved by service name through Eureka - no hardcoded host/port.
-// A 404 here means the customer doesn't exist and blocks account creation.
+// A 404 here means the customer doesn't exist and blocks the calling operation
+// (account creation and listing a customer's accounts).
 @FeignClient(name = "customer-service")
 public interface CustomerClient {
 

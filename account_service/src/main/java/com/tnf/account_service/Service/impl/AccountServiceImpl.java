@@ -2,6 +2,7 @@ package com.tnf.account_service.Service.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -158,5 +159,39 @@ public class AccountServiceImpl implements AccountService {
         
         log.debug("Account found: {}", accountNumber);
         return accountMapper.toAccountResponse(account);
+    }
+
+    @Override
+    public List<AccountResponse> getAccountsByCustomer(String customerId) {
+        log.info("Fetching accounts for customer: {}", customerId);
+
+        // Customer is validated up front (same pattern as createAccount): a 404 is a
+        // genuine "no such customer", any other Feign failure means the dependency is down.
+        try {
+            CustomerResponse customerResponse = customerClient.getCustomer(customerId);
+            if (customerResponse == null || customerResponse.getCustomerId() == null) {
+                throw new ResourceNotFoundException(
+                        String.format("Customer not found: %s", customerId));
+            }
+            log.debug("Customer {} verified", customerId);
+        } catch (FeignException.NotFound e) {
+            log.error("Customer not found: {}", customerId);
+            throw new ResourceNotFoundException(
+                    String.format("Customer not found: %s", customerId));
+        } catch (FeignException e) {
+            log.error("Error validating customer: {}", customerId, e);
+            throw new CustomerServiceUnavailableException(
+                    String.format("Customer service is unavailable while validating customer: %s", customerId),
+                    e);
+        }
+
+        // A validated customer with zero accounts is a valid, empty result - not an error.
+        List<AccountResponse> accounts = accountRepository.findByCustomerId(customerId)
+                .stream()
+                .map(accountMapper::toAccountResponse)
+                .toList();
+
+        log.debug("Found {} account(s) for customer: {}", accounts.size(), customerId);
+        return accounts;
     }
 }

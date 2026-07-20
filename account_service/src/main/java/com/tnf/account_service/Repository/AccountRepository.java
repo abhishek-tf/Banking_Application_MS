@@ -1,5 +1,6 @@
 package com.tnf.account_service.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -14,4 +15,7 @@ public interface AccountRepository extends MongoRepository<BankAccount, String> 
     Optional<BankAccount> findByAccountNumber(String accountNumber);
 
     boolean existsByAccountNumber(String accountNumber);
+
+    // Backed by the customerId index; returns empty when the customer owns no accounts.
+    List<BankAccount> findByCustomerId(String customerId);
 }

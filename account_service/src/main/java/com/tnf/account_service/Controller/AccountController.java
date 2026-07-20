@@ -1,5 +1,7 @@
 package com.tnf.account_service.Controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -60,6 +62,13 @@ public class AccountController {
     public ResponseEntity<AccountResponse> getAccount(@PathVariable String accountNumber) {
         log.info("GET /accounts/{} - Fetching account details", accountNumber);
         AccountResponse response = accountService.getAccount(accountNumber);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<AccountResponse>> getAccountsByCustomer(@PathVariable String customerId) {
+        log.info("GET /accounts/customer/{} - Fetching accounts for customer", customerId);
+        List<AccountResponse> response = accountService.getAccountsByCustomer(customerId);
         return ResponseEntity.ok(response);
     }
 }

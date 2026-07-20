@@ -1,6 +1,7 @@
 package com.tnf.account_service.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import com.tnf.account_service.Dto.Request.CreateAccountRequest;
 import com.tnf.account_service.Dto.Request.DepositRequest;
@@ -21,4 +22,9 @@ public interface AccountService {
     BalanceResponse withdraw(String accountNumber, WithdrawRequest request);
 
     AccountResponse getAccount(String accountNumber);
+
+    // Validates the customer via customer-service first, then returns every account they
+    // own - an empty list if none exist. Throws ResourceNotFoundException for an unknown
+    // customer, CustomerServiceUnavailableException if the dependency is unreachable.
+    List<AccountResponse> getAccountsByCustomer(String customerId);
 }
