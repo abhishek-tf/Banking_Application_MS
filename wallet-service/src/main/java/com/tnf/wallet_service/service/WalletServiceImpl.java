@@ -3,15 +3,20 @@ package com.tnf.wallet_service.service;
 import com.tnf.wallet_service.Feign.AccountFeignClient;
 import com.tnf.wallet_service.Feign.CustomerFeignClient;
 import com.tnf.wallet_service.dto.*;
+import com.tnf.wallet_service.entities.Scanner;
 import com.tnf.wallet_service.entities.Wallet;
+import com.tnf.wallet_service.entities.WalletHistory;
 import com.tnf.wallet_service.enums.AccountType;
 import com.tnf.wallet_service.enums.ScannerCategory;
+import com.tnf.wallet_service.mapper.WalletHistoryMapper;
 import com.tnf.wallet_service.mapper.WalletMapper;
 import com.tnf.wallet_service.repository.ScannerRepository;
+import com.tnf.wallet_service.repository.WalletHistoryRepository;
 import com.tnf.wallet_service.repository.WalletRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,6 +35,8 @@ public class WalletServiceImpl implements WalletService {
     private final AccountFeignClient accountFeignClient;
     private final ScannerRepository scannerRepository;
     private final CustomerFeignClient customerFeignClient;
+    private final WalletHistoryRepository historyRepository;
+    private final WalletHistoryMapper walletHistoryMapper;
 
     @Override
     public WalletResponse createWallet(WalletRequest dto) {
@@ -77,6 +84,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<List<AccountResponse>> createTopUp(String id) {
         List<AccountResponse> accountResponses = Optional
                 .ofNullable(accountFeignClient.getAccounts(id).getBody())
@@ -89,6 +97,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    @Transactional
     public WalletResponse updatingMoney(String accountId, String customerId, String walletProvider, BalanceUpdate update) {
        List<Wallet> wallets= walletRepository.findAllByCustomerId(customerId).orElseThrow(()->new RuntimeException("Customer not found with this Id"));
         Wallet wallet = wallets.stream()
@@ -115,6 +124,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    @Transactional
     public WalletResponse takingFromWallet(String customerId, String accountNumber,String walletProvider, WithdrawRequest request) {
         List<Wallet> wallets= walletRepository.findAllByCustomerId(customerId).orElseThrow(()->new RuntimeException("Customer not found with this Id"));
         Wallet wallet = wallets.stream()
@@ -122,7 +132,7 @@ public class WalletServiceImpl implements WalletService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Wallet provider not found"));
 
-        if(wallet.getBalance().compareTo(request.getAmount()) > 0){
+        if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
             throw new RuntimeException("U dont have sufficient amount in Account to add to ur balance ");
 
         }
@@ -136,15 +146,41 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    @Transactional
     public WalletResponse payToMerchant(String walletId, String accountNumber,WithdrawRequest request) {
-        scannerRepository.findByBankAccount(accountNumber).orElseThrow(()->new RuntimeException("Merchant Not Found"));
+        Scanner scanner=scannerRepository.findByBankAccount(accountNumber).orElseThrow(()->new RuntimeException("Merchant Not Found"));
        Wallet wallet= walletRepository.findByWalletId(walletId).orElseThrow(()->new RuntimeException("wallet not found"));
+        if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new RuntimeException("Insufficient wallet balance");
+        }
         wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
         DepositRequest depositRequest=DepositRequest.builder()
                 .amount(request.getAmount())
                 .build();
         accountFeignClient.deposit(accountNumber,depositRequest);
-        return walletMapper.toDto(wallet);
+        walletRepository.save(wallet);
+        WalletResponse response=walletMapper.toDto(wallet);
+        WalletHistoryRequest walletHistoryRequest=WalletHistoryRequest.builder()
+                        .walletId(response.getWalletId())
+                                .destination(accountNumber)
+                                        .merchantId(scanner.getScannerId())
+                                                .amount(request.getAmount())
+                                                        .failureReason(null)
+                                                                .remarks("Payed to this" + scanner.getMerchantName())
+                                                                        .source(walletId)
+                                                                                .transactionType("UPI")
+                                                                                        .referenceNumber("REF-" + UUID.randomUUID().toString().replace("-", "").substring(0, 10))
+                                                                                                .upiTransactionId("REF-" + UUID.randomUUID().toString().replace("-", "").substring(0, 10))
+                                                                                                        .accountNumber(accountNumber)
+                                                                                                                .scannerId(scanner.getScannerId())
+                                                                                                                        .status("COMPLETED")
+                .createdAt(LocalDateTime.now()).build();
+
+
+
+        WalletHistory walletHistory=walletHistoryMapper.toEntity(walletHistoryRequest);
+        historyRepository.save(walletHistory);
+        return response;
     }
 
 

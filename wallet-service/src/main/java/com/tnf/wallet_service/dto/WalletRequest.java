@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class WalletRequest {
-    @NotBlank(message = "Wallet ID cannot be blank")
     private String walletId;
 
     @NotBlank(message = "Customer ID cannot be blank")
@@ -29,14 +28,11 @@ public class WalletRequest {
 
     private String scannerCategory;
 
-    @NotBlank(message = "Status cannot be blank")
     private String status;
 
-    @NotNull(message = "Daily transfer amount cannot be null")
     @DecimalMin(value = "0.00", message = "Daily transfer amount cannot be negative")
     private BigDecimal dailyTransferAmount;
 
-    @NotNull(message = "Daily transfer date cannot be null")
     private LocalDate dailyTransferDate;
 
     private LocalDateTime createdAt;
