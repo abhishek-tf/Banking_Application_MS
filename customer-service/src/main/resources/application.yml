@@ -6,10 +6,7 @@ spring:
     name: customer-service
   data:
     mongodb:
-      host: localhost
-      port: 27017
-      database: customer_service_db
-      auto-index-creation: true
+      uri: mongodb://localhost:27017/customer_db
 
 eureka:
   client:

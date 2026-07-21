@@ -7,8 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-// We only need the id to confirm the customer exists; ignoreUnknown lets customer-service
-// evolve its payload without breaking this client.
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
