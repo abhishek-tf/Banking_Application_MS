@@ -1,0 +1,17 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: WALLET-SERVICE
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/wallet_db
+    username: root
+    password: Sujatha%67W
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
