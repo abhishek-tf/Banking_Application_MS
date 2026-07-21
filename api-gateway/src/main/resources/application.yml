@@ -18,8 +18,7 @@ spring:
               lower-case-service-id: true
 
           routes:
-            # --- OpenAPI docs route: rewrite /customers/v3/api-docs -> /v3/api-docs.
-            #     Must precede the generic /customers/** route so it matches first. ---
+
             - id: customer-docs
               uri: lb://CUSTOMER-SERVICE
               predicates:
@@ -27,8 +26,7 @@ spring:
               filters:
                 - RewritePath=/customers/v3/api-docs, /v3/api-docs
 
-            # --- Banking service routes. Services serve at their bare base paths,
-            #     so requests are forwarded as-is (no prefix, no StripPrefix). ---
+
             - id: customer-service
               uri: lb://CUSTOMER-SERVICE
               predicates:
@@ -38,6 +36,13 @@ spring:
               uri: lb://ACCOUNT-SERVICE
               predicates:
                 - Path=/accounts/**
+
+            - id: transaction-docs
+              uri: lb://TRANSACTION-SERVICE
+              predicates:
+                - Path=/transactions/v3/api-docs
+              filters:
+                - RewritePath=/transactions/v3/api-docs, /v3/api-docs
 
             - id: transaction-service
               uri: lb://TRANSACTION-SERVICE
@@ -90,4 +95,18 @@ info:
     name: API Gateway
     version: 1.0.0
     description: Manages API Gateway
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: transaction-service
+        url: /transactions/v3/api-docs
+      - name: customer-service
+        url: /customers/v3/api-docs
+      - name: account-service
+        url: /accounts/v3/api-docs
+      - name: wallet-service
+        url: /wallet/v3/api-docs
+      - name: audit-service
+        url: /audit/v3/api-docs
 
