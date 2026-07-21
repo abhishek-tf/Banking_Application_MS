@@ -1,6 +1,7 @@
 package com.tnf.wallet_service.service;
 
 import com.tnf.wallet_service.Feign.AccountFeignClient;
+import com.tnf.wallet_service.Feign.CustomerFeignClient;
 import com.tnf.wallet_service.dto.*;
 import com.tnf.wallet_service.entities.Wallet;
 import com.tnf.wallet_service.enums.AccountType;
@@ -28,10 +29,15 @@ public class WalletServiceImpl implements WalletService {
     private final WalletMapper walletMapper;
     private final AccountFeignClient accountFeignClient;
     private final ScannerRepository scannerRepository;
+    private final CustomerFeignClient customerFeignClient;
 
     @Override
     public WalletResponse createWallet(WalletRequest dto) {
-
+        //checking from the customer service
+        CustomerResponseDTO c=customerFeignClient.getCustomer(dto.getCustomerId());
+        if(c==null){
+            throw new RuntimeException("Customer not found");
+        }
         walletRepository.findAllByCustomerId(dto.getCustomerId())
                 .ifPresent(wallets -> {
                     boolean exists = wallets.stream()
