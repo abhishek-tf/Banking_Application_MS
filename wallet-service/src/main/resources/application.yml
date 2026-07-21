@@ -15,3 +15,16 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+  swagger-ui:
+    path: /swagger-ui.html
+
+info:
+  app:
+    name: Wallet Service
+    version: 1.0.0
+    description: Wallet Microservice
