@@ -14,4 +14,5 @@ public interface WalletService {
     WalletResponse updatingMoney(String accountId, String customerId, String walletProvider, BalanceUpdate update);
     WalletResponse takingFromWallet( String customerId,  String accountNumber,String walletProvider,WithdrawRequest request);
     WalletResponse payToMerchant(String walletId,String accountNumber,WithdrawRequest request);
+    void logFailure(String message);
 }
