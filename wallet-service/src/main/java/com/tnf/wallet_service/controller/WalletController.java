@@ -23,6 +23,7 @@ public class WalletController {
             return walletService.createWallet(dto);
         }
         catch (Exception e){
+            walletService.logFailure(e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -32,6 +33,7 @@ public class WalletController {
         {
             return walletService.createTopUp(customerId);
         } catch (RuntimeException e) {
+            walletService.logFailure(e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -44,6 +46,7 @@ public class WalletController {
             }
             return walletService.updatingMoney(accountNumber,customerId,walletProvider,update);
         } catch (RuntimeException e) {
+            walletService.logFailure(e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -57,6 +60,7 @@ public class WalletController {
 
             return walletService.takingFromWallet(customerId, accountNumber, walletProvider, request);
         } catch (RuntimeException e) {
+            walletService.logFailure(e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -67,6 +71,7 @@ public class WalletController {
         try{
             return walletService.payToMerchant(walletId,accountNumber,request);
         } catch (RuntimeException e) {
+            walletService.logFailure(e.getMessage());
             throw new RuntimeException(e);
         }
     }

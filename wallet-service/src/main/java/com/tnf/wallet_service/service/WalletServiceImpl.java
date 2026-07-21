@@ -1,6 +1,7 @@
 package com.tnf.wallet_service.service;
 
 import com.tnf.wallet_service.Feign.AccountFeignClient;
+import com.tnf.wallet_service.Feign.AuditClient;
 import com.tnf.wallet_service.Feign.CustomerFeignClient;
 import com.tnf.wallet_service.dto.*;
 import com.tnf.wallet_service.entities.Scanner;
@@ -36,6 +37,7 @@ public class WalletServiceImpl implements WalletService {
     private final CustomerFeignClient customerFeignClient;
     private final WalletHistoryRepository historyRepository;
     private final WalletHistoryMapper walletHistoryMapper;
+    private final AuditClient auditClient;
 
     @Override
     public WalletResponse createWallet(WalletRequest dto) {
@@ -182,5 +184,11 @@ public class WalletServiceImpl implements WalletService {
         return response;
     }
 
-
+    public void logFailure(String message) {
+        try {
+            auditClient.log(new AuditLogRequest("ERROR", "transaction-service", message));
+        } catch (Exception ex) {
+            System.err.println("[WARN] Could not reach audit-service: " + ex.getMessage());
+        }
+    }
 }
