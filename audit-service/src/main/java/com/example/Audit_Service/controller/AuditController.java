@@ -25,7 +25,7 @@ public class AuditController {
         this.service = service;
     }
 
-    @PostMapping("/log")
+    @PostMapping("/logs")
     public ResponseEntity<AuditLog> saveLog(@Valid @RequestBody AuditRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(service.saveLog(request));
