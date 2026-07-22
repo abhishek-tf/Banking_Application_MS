@@ -2,6 +2,7 @@ package com.tnf.account_service.Dto.Request;
 
 import java.math.BigDecimal;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +14,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Schema(
+        name = "DepositRequest",
+        description = "Payload for depositing funds into an account.")
 public class DepositRequest {
 
+    @Schema(
+            description = "Amount to deposit. Must be strictly greater than zero; a null or non-positive "
+                    + "value is rejected with HTTP 400 (InvalidAmountException).",
+            example = "150.00",
+            requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal amount;
 }

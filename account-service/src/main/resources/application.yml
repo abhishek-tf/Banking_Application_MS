@@ -22,6 +22,16 @@ management:
     health:
       show-details: always
 
+# Swagger / OpenAPI (springdoc). These match the defaults but are pinned explicitly
+# so Swagger UI and the API docs are reachable at known paths right after startup:
+#   UI:       http://localhost:8082/swagger-ui/index.html
+#   API docs: http://localhost:8082/v3/api-docs
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 eureka:
   client:
     service-url:
